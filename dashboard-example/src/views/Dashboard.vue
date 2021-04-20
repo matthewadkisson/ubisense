@@ -25,18 +25,22 @@ export default {
   },
   computed: {
     workstationsList: function(){
-      let stations = [...this.workstations];
-      stations.forEach(station => {
-        if(station.currentProduct!==null){
-          var matchingEngine = this.engines.filter(obj => {
-            return obj.id === station.currentProduct.id
-          });
-          //TODO: depending on how much you trust the API to return correct results, we may need to handle the case
-          // in which multiple engines with the same ID are returned
-          let mergedObj = {...station.currentProduct, ...(matchingEngine === undefined) ? {} : matchingEngine[0] };
-          station.currentProduct = mergedObj;
-        }
-      });
+      let stations = [];
+      for(var index in this.workstations){
+        var station = this.workstations[index];
+        var matchingEngine = this.engines.filter(obj => {
+          return obj.id === station.currentProduct?.id
+        });
+        //TODO: depending on how much you trust the API to return correct results, we may need to handle the case
+        // in which multiple engines with the same ID are returned
+        let mergedObj = {...station.currentProduct, ...(matchingEngine === undefined) ? null : matchingEngine[0] };
+
+        stations.push({
+          name: station.name,
+          cycleTimeHrs: station.cycleTimeHrs,
+          currentProduct: station.currentProduct === null? null : mergedObj
+        });
+      }
       return stations;
     }
   },

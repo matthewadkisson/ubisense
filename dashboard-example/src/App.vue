@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-           <v-toolbar-title class="title">Work Stations</v-toolbar-title>
+           <div id="page-title">Work Stations</div>
     </v-app-bar>
     <v-main>
       <v-container>
@@ -22,10 +22,11 @@ export default {
 };
 </script>
 <style scoped>
-.title{
+#page-title{
 text-align: center; 
-font-weight: bold;
- font-size: 24pt;
+font-weight: bold !important;
+ font-size: 24pt !important;
  display: block;
+ width: 100%
 }
 </style>
