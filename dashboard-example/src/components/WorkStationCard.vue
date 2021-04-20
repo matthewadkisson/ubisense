@@ -5,10 +5,10 @@
                 {{station.name}}
             </div>
             <div v-if="station.currentProduct!==null"  style="padding: 20px; display: flex; flex-wrap: wrap">
-                <div style="flex: 0 0 40%; max-width: 40%;">
+                <div class="image-container">
                     <v-img v-bind:src="station.currentProduct.image"></v-img>
                 </div>
-                <div style="flex: 0 0 60%; max-width: 60%;">
+                <div class="info-container">
                     <div style="flex: 1 1 auto; display: flex; flex-wrap: wrap">
                         <div class="data-container">
                             <p class="subtitle">Serial Number</p>
@@ -27,10 +27,11 @@
                             <p class="value">{{station.cycleTimeHrs}} Hour(s)</p>
                         </div>
                         <div class="time-elapsed-container">
-                            <p class="subtitle">Time Elapsed</p>
+                            <div v-if="overdueMinutes<0" style="flex: 0 0 50%;" class="subtitle">Time Elapsed: {{minutesSinceEntry | timeElapsed}} min.</div>
+                            <div v-else style="flex: 0 0 50%;" class="overdue subtitle" >Overdue: {{overdueMinutes | timeElapsed }} min.</div>
                             <div class="progress-container">
-                                <div v-bind:style="{ flex: '0 0 '+precentageDone+'%'}"></div>
-                                <div v-bind:style="{ flex: '0 0 '+percentageNotDone+'%'}" class="percent-not-done"></div>
+                                <div v-bind:style="{ width: precentageDone+'%'}" v-bind:class="{'overdue-progress': overdueMinutes > 0}"></div>
+                                <div v-bind:style="{ width: percentageNotDone+'%'}" class="percent-not-done"></div>
                             </div>
                         </div>
                     </div>
@@ -62,15 +63,18 @@ export default {
     },
     data: function(){
         return {
-
+            now: DateTime.now()
         };
     },
     computed: {
         minutesSinceEntry: function(){
-            return (-1)*(DateTime.fromMillis(this.station.currentProduct.entryTime).diffNow('minutes').values.minutes);
+            return (-1)*(DateTime.fromMillis(this.station.currentProduct.entryTime).diff(this.now, 'minutes').values.minutes);
         },
         cycleTimeMinutes: function(){
             return this.station.cycleTimeHrs*60;
+        },
+        overdueMinutes: function(){
+            return this.minutesSinceEntry - this.cycleTimeMinutes;
         },
         precentageDone: function(){
             var percentDone = (this.minutesSinceEntry/this.cycleTimeMinutes)*100;
@@ -83,7 +87,13 @@ export default {
     filters: {
         timeFormat: function(value){
             return DateTime.fromMillis(value).toLocaleString(DateTime.TIME_SIMPLE);
+        },
+        timeElapsed: function(value){
+            return Math.trunc(value);
         }
+    },
+    mounted: function(){
+        setInterval(() => { this.now = DateTime.now() }, 1000)
     }
 }
 </script>
@@ -126,8 +136,29 @@ export default {
     font-weight: bold;
 }
 .no-product{
-    margin-top: 25vh;
+    line-height: 14em;
     text-align: center;
     font-weight: bold;
+}
+.overdue-progress{
+    background-color: red;
+}
+.image-container{
+    flex: 0 0 40%;
+    max-width: 40%;
+}
+.info-container{
+    flex: 0 0 60%;
+    max-width: 60%;
+}
+@media (max-width: 600px) {
+   .image-container{
+        flex: 0 0 100%;
+        max-width: 100%;
+    } 
+    .info-container{
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }
 </style>
